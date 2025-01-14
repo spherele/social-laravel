@@ -10,7 +10,7 @@
             <img :src="message.avatar" :alt="message.sender" class="object-cover"/>
         </Avatar>
         <div
-            class="max-w-[70%] p-3 rounded-lg"
+            class="message-width p-3 rounded-lg"
             :class="{
                 'bg-[#111827] text-white': message.sender === 'me',
                 'bg-[#f0f0f0] text-gray-800': message.sender !== 'me',
@@ -22,7 +22,7 @@
                     v-if="isImage(message.file)"
                     :src="message.file.url"
                     :alt="message.file.name"
-                    class="max-w-[300px] h-auto rounded-lg cursor-pointer"
+                    class="h-auto rounded-lg cursor-pointer picture-width"
                     @click="openImageModal(message.file.url)"
                 />
                 <div v-else class="flex items-center">
@@ -110,6 +110,13 @@
                 class="flex items-center space-x-2 mt-1"
             >
                 <button
+                    v-if="showCopyButton"
+                    @click="copyCode"
+                    class="text-xs text-gray-400 hover:text-gray-600"
+                >
+                    Copy
+                </button>
+                <button
                     @click="editMessage(message)"
                     class="text-xs text-gray-400 hover:text-gray-600"
                 >
@@ -121,7 +128,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
 import Avatar from '@/Components/UI/Avatar.vue';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github.css';
@@ -156,7 +163,24 @@ const highlightCode = (text) => {
                 </div>`;
     });
 };
+
+const showCopyButton = computed(() => {
+    return /```([\s\S]*?)```/g.test(props.message.text);
+});
+
+const copyCode = () => {
+    const codeMatch = props.message.text.match(/```([\s\S]*?)```/g);
+    if (codeMatch) {
+        const code = codeMatch[0].replace(/```/g, '').trim();
+        navigator.clipboard.writeText(code).then(() => {
+            alert('Code copied to clipboard!');
+        }).catch((err) => {
+            console.error('Failed to copy code:', err);
+        });
+    }
+};
 </script>
+
 <style scoped>
 pre {
     background-color: #000409;
@@ -172,5 +196,21 @@ code {
     font-family: 'Courier New', monospace;
     font-size: 14px;
     color: #ffff00;
+}
+
+.picture-width {
+    aspect-ratio: 1;
+    max-width: 400px;
+    object-fit: cover;
+    @media (max-width: 768px) {
+        max-width: 100%;
+    }
+}
+
+.message-width {
+    max-width: 70%;
+    @media (max-width: 768px) {
+        max-width: 90%;
+    }
 }
 </style>

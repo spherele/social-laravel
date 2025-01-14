@@ -213,13 +213,6 @@ const isImage = (file) => {
     height: calc(85vh - 200px);
 }
 
-.picture-width {
-    max-width: 300px;
-    @media (max-width: 768px) {
-        max-width: 100%;
-    }
-}
-
 ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
