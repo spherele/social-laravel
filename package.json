@@ -23,5 +23,10 @@
         "postcss": "^8.4.31",
         "tailwindcss": "^3.4.17",
         "vue": "^3.4.0"
+    },
+    "dependencies": {
+        "body-scroll-lock": "^4.0.0-beta.0",
+        "lucide-vue-next": "^0.471.0",
+        "vue-final-modal": "^4.5.5"
     }
 }
