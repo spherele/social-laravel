@@ -76,13 +76,21 @@ const submit = () => {
                 </label>
             </div>
 
-            <div class="flex items-center justify-end mt-4">
+            <div class="flex items-center justify-end mt-4 super-last">
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
                     class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                     Forgot your password?
+                </Link>
+
+                <Link class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md
+                            font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700
+                            active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+                            transition ease-in-out duration-150  ms-4"
+
+                      :href="route('register')">Register
                 </Link>
 
                 <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
@@ -92,3 +100,17 @@ const submit = () => {
         </form>
     </GuestLayout>
 </template>
+
+<style scope>
+    .super-last {
+        @media (max-width: 768px) {
+            flex-direction: column-reverse;
+            width: 100%;
+            gap: 10px;
+            & > a, button {
+                width: 100%;
+                margin: unset;
+            }
+        }
+    }
+</style>
