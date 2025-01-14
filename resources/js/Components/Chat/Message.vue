@@ -1,4 +1,3 @@
-<!-- src/Components/Chat/Message.vue -->
 <template>
     <div
         class="flex"
@@ -17,7 +16,7 @@
                 'bg-[#f0f0f0] text-gray-800': message.sender !== 'me',
             }"
         >
-            <p v-if="message.text">{{ message.text }}</p>
+            <p v-if="message.text" style="word-break: break-all; white-space: pre-wrap;" v-html="highlightCode(message.text)"></p>
             <div v-if="message.file" class="mt-2">
                 <img
                     v-if="isImage(message.file)"
@@ -55,7 +54,56 @@
                     {{ message.time }}
                     <span v-if="message.isEdited" class="text-gray-400 ml-1">(edited)</span>
                 </span>
-                <span v-if="message.sender === 'me'" class="text-xs text-gray-400 ml-2">✓</span>
+                <span v-if="message.sender === 'me'" class="text-xs text-gray-400 ml-2">
+                    <!-- Иконка статуса прочтения -->
+                    <template v-if="message.isRead">
+                        <!-- Две галочки (прочитано) -->
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-check"
+                        >
+                            <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-check"
+                        >
+                            <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                    </template>
+                    <template v-else>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-check"
+                        >
+                            <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                    </template>
+                </span>
             </div>
             <div
                 v-if="message.sender === 'me'"
@@ -71,3 +119,58 @@
         </div>
     </div>
 </template>
+
+<script setup>
+import { defineProps, defineEmits } from 'vue';
+import Avatar from '@/Components/UI/Avatar.vue';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';
+
+const props = defineProps({
+    message: {
+        type: Object,
+        required: true,
+    },
+});
+
+const emit = defineEmits(['editMessage', 'openImageModal']);
+
+const isImage = (file) => {
+    return file.type.startsWith('image/');
+};
+
+const editMessage = (message) => {
+    emit('editMessage', message);
+};
+
+const openImageModal = (imageUrl) => {
+    emit('openImageModal', imageUrl);
+};
+
+const highlightCode = (text) => {
+    const regex = /```([\s\S]*?)```/g;
+    return text.replace(regex, (match, code) => {
+        const highlighted = hljs.highlightAuto(code).value;
+        return `<div style="background-color: #232323; padding: 12px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 8px 0;">
+                  <code style="font-family: 'Courier New', monospace; font-size: 14px; color: #eceff3;">${highlighted}</code>
+                </div>`;
+    });
+};
+</script>
+<style scoped>
+pre {
+    background-color: #000409;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 8px 0;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #ffff00;
+}
+</style>

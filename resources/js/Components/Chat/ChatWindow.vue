@@ -20,131 +20,17 @@
             class="space-y-4 custom-height overflow-y-auto pb-1.5 pr-1.5 relative"
             @scroll="handleScroll"
         >
-            <div
+            <Message
                 v-for="message in messages"
                 :key="message.id"
-                class="flex"
-                :class="{ 'justify-end': message.sender === 'me', 'justify-start': message.sender !== 'me' }"
-            >
-                <Avatar
-                    v-if="message.sender !== 'me'"
-                    class="w-8 h-8 mr-2"
-                >
-                    <img :src="message.avatar" :alt="message.sender" class="object-cover"/>
-                </Avatar>
-                <div
-                    class="max-w-[70%] p-3 rounded-lg"
-                    :class="{
-                        'bg-[#111827] text-white': message.sender === 'me',
-                        'bg-[#f0f0f0] text-gray-800': message.sender !== 'me',
-                    }"
-                >
-                    <p v-if="message.text">{{ message.text }}</p>
-                    <div v-if="message.file" class="mt-2">
-                        <img
-                            v-if="isImage(message.file)"
-                            :src="message.file.url"
-                            :alt="message.file.name"
-                            class="picture-width h-auto rounded-lg cursor-pointer"
-                            @click="openImageModal(message.file.url)"
-                        />
-                        <div v-else class="flex items-center">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-6 w-6 text-gray-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                                />
-                            </svg>
-                            <a
-                                :href="message.file.url"
-                                target="_blank"
-                                class="ml-2 text-blue-500 hover:underline"
-                            >
-                                {{ message.file.name }}
-                            </a>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mt-1">
-                        <span class="text-xs text-gray-400">
-                            {{ message.time }}
-                            <span v-if="message.isEdited" class="text-gray-400 ml-1">(edited)</span>
-                        </span>
-                        <span v-if="message.sender === 'me'" class="text-xs text-gray-400 ml-2">
-                            <!-- Иконка статуса прочтения -->
-                            <template v-if="message.isRead">
-                                <!-- Две галочки (прочитано) -->
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="lucide lucide-check"
-                                >
-                                    <path d="M20 6 9 17l-5-5"/>
-                                </svg>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="lucide lucide-check"
-                                >
-                                    <path d="M20 6 9 17l-5-5"/>
-                                </svg>
-                            </template>
-                            <template v-else>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="lucide lucide-check"
-                                >
-                                    <path d="M20 6 9 17l-5-5"/>
-                                </svg>
-                            </template>
-                        </span>
-                    </div>
-                    <div
-                        v-if="message.sender === 'me'"
-                        class="flex items-center space-x-2 mt-1"
-                    >
-                        <button
-                            @click="editMessage(message)"
-                            class="text-xs text-gray-400 hover:text-gray-600"
-                        >
-                            Edit
-                        </button>
-                    </div>
-                </div>
-            </div>
+                :message="message"
+                @editMessage="editMessage"
+                @openImageModal="openImageModal"
+            />
             <ScrollToBottom :isVisible="isScrolledUp" :scrollToBottom="scrollToBottom" />
         </div>
         <div class="mt-4">
-            <div class="flex items-center">
+            <div class="flex items-center flex-end needle-class">
                 <label for="file-input" class="p-2 cursor-pointer bg-[#111827] text-white rounded-lg mr-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -160,13 +46,15 @@
                     class="hidden"
                     @change="handleFileUpload"
                 />
-                <input
+                <textarea
                     v-model="newMessage"
-                    @keyup.enter="sendMessage"
+                    @keydown.enter="handleTextareaKeydown"
+                    @input="adjustTextareaHeight"
                     type="text"
                     placeholder="Type a message..."
-                    class="flex-1 p-2 border-[#111827] rounded-lg"
-                    style="outline: none !important; box-shadow: none !important;"
+                    class="w-full p-2 border-[#111827] rounded-lg"
+                    style="outline: none !important; box-shadow: none !important; min-height: 42px; height: 42px!important;"
+                    wrap="soft"
                 />
                 <button
                     @click="sendMessage"
@@ -201,8 +89,8 @@
 <script setup>
 import { defineProps, defineEmits, ref, onMounted, watch, nextTick } from 'vue';
 import Card from '@/Components/UI/Card.vue';
-import Avatar from '@/Components/UI/Avatar.vue';
 import ScrollToBottom from '@/Components/UI/ScrollToBottom.vue';
+import Message from '@/Components/Chat/Message.vue';
 
 const props = defineProps({
     selectedChat: {
@@ -214,6 +102,34 @@ const props = defineProps({
         required: true,
     },
 });
+
+const handleTextareaKeydown = (event) => {
+    if (event.key === 'Enter') {
+        if (event.shiftKey) {
+            event.preventDefault();
+            newMessage.value += '\n';
+
+
+            nextTick(() => {
+                adjustTextareaHeight(event);
+            });
+        } else {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+};
+
+const adjustTextareaHeight = (event) => {
+    const textarea = event.target;
+    textarea.style.height = 'auto';
+
+    if (textarea.scrollHeight >= textarea.clientHeight) {
+        textarea.style.height = `${textarea.scrollHeight}px`;
+    } else {
+        textarea.style.height = '42px';
+    }
+};
 
 const emit = defineEmits([
     'goBackToChatList',
@@ -263,6 +179,11 @@ const sendMessage = () => {
     emit('sendMessage', newMessage.value, editingMessage.value);
     newMessage.value = '';
     editingMessage.value = null;
+
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+        textarea.style.height = '42px';
+    }
 };
 
 const goBackToChatList = () => {
@@ -317,4 +238,19 @@ const isImage = (file) => {
 ::-webkit-scrollbar-thumb:hover {
     background: #1f2937;
 }
+
+textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 42px;
+    max-height: 200px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.needle-class {
+    display: flex;
+    align-items: flex-end;
+}
+
 </style>

@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "body-scroll-lock": "^4.0.0-beta.0",
+        "highlight.js": "^11.11.1",
         "lucide-vue-next": "^0.471.0",
         "vue-final-modal": "^4.5.5"
     }
